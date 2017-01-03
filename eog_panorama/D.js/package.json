@@ -1,0 +1,38 @@
+{
+  "author": "Jonathan Gotti <jgotti@jgotti.org>",
+  "name": "d.js",
+  "description": "a tiny promise/A+ library",
+  "version": "0.7.5",
+  "licence": "MIT",
+  "main": "lib/D.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/malko/D.js.git"
+  },
+  "devDependencies": {
+    "promises-aplus-tests": "2.x",
+    "grunt": "~0.4",
+    "grunt-contrib-uglify": "*",
+    "grunt-mocha-cli": "~1.0",
+    "chai": "~1.7",
+    "grunt-version": "~0.2.2"
+  },
+  "scripts": {
+    "test": "promises-aplus-tests lib/D.js && grunt test"
+  },
+  "engines": {
+    "node": ">=0.6"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "tests"
+  },
+  "readmeFilename": "README.md",
+  "keywords": [
+    "Promises/A+",
+    "promises-aplus",
+    "promise",
+    "then",
+    "async"
+  ]
+}

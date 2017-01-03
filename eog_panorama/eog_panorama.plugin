@@ -1,0 +1,8 @@
+[Plugin]
+Loader=python3
+Module=eog_panorama
+Name=Panorama Viewer
+Icon=eog_panorama.svg
+Description=A panorama viewer plugin for displaying 360° Photo Sphere images
+Authors=Andreas Eisenbarth <aerilius@gmail.com>
+Copyright=Copyright © 2017 GPL v3.0

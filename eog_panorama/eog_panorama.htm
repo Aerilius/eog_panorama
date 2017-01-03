@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Fix page scale -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="photo-sphere-viewer/photo-sphere-viewer.css">
+
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    #photosphere {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<div id="photosphere"></div>
+
+<script src="three.js/three.js"></script>
+<script src="D.js/lib/D.js"></script>
+<script src="uevent/uevent.js"></script>
+<script src="doT/doT.js"></script>
+<script src="photo-sphere-viewer/photo-sphere-viewer.js"></script>
+<script type="text/javascript">
+
+/* Issue: Pinch gesture also triggers page zoom in the WebView.
+ * Pinch-to-zoom is handled by the canvas and should not bubble up. 
+ * Workaround: Disable touch events on the document root.
+ */
+window.addEventListener('touchstart', function(event) { event.preventDefault(); });
+
+
+function callPython(message) {
+    window.location.href = 'eogp://'+message;
+}
+
+
+// Initialize the panorama viewer.
+var PSV = new PhotoSphereViewer({
+    container: 'photosphere',
+    //panorama: '',
+    autoload: false,
+    loading_img: false,
+    navbar: false,
+    caption: false, // (would make navbar show up)
+    default_fov: 75,
+    fisheye: true,
+    move_speed: 1.1,
+    time_anim: true,
+    // Use a slow initial rotation to indicate there is more to see.
+    anim_speed: '0.1rpm',
+    mousewheel: true,
+    mousemove: true,
+    keyboard: true,
+    gyroscope: true,
+    // Note: Fallback without webgl requires three.js/CanvasRenderer.js, three.js/Projector.js
+    webgl: true,
+    // Avoid XMLHttpRequest which fails locally, we provide the XMP data from eog. 
+    // Also there is a mysterious error using true.
+    usexmpdata: false,
+    //pano_data: {}
+});
+
+
+// Simple API to control the panorama from Python
+PSV.show_panorama = function(uri, pano_data) {
+    this.config.pano_data = pano_data;
+    this.setPanorama(uri, false).then(function() {
+        callPython('show_panorama_completed');
+    });
+};
+
+
+// Tell python the document finished loading.
+// While instantiation of WebView is synchronous, loading of html is asynchronous.
+// Only now, python can interact with the html.
+callPython('document_ready');
+
+
+// DEBUG helpers:
+
+
+window.onerror = function(message, url, linenumber) {
+    alert('Error message: '+message+'\nURL: '+url+'\nLine Number: '+linenumber);
+    return true;
+}
+
+
+function test_show_panorama() {
+    var data_uri = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDACAWGBwYFCAcGhwkIiAmMFA0MCwsMGJGSjpQdGZ6eHJmcG6AkLicgIiuim5woNqirr7EztDOfJri8uDI8LjKzsb/2wBDASIkJDAqMF40NF7GhHCExsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsb/wgARCAAgAEADAREAAhEBAxEB/8QAGAAAAwEBAAAAAAAAAAAAAAAAAAECAwT/xAAWAQEBAQAAAAAAAAAAAAAAAAAAAQL/2gAMAwEAAhADEAAAAXrE2CIpbzQRjnWR37zIShUoc8qJsSIoa1LQwszNJWIk/8QAHBAAAgIDAQEAAAAAAAAAAAAAAAECERASIQMi/9oACAEBAAEFAs9zVmpOSkRVSpFI4cFOA/SBQ9UORubCtlGhRw+a1gKMViij/8QAGBEAAgMAAAAAAAAAAAAAAAAAETAAASD/2gAIAQMBAT8BUIN27//EABgRAAIDAAAAAAAAAAAAAAAAABEwAAEg/9oACAECAQE/AVGHdO//xAAcEAABBAMBAAAAAAAAAAAAAAAAECAhMQERUTD/2gAIAQEABj8CI8Mcfw1ZCy+ls//EAB8QAAMAAgMBAAMAAAAAAAAAAAABESExQVFhgXGh4f/aAAgBAQABPyFxLOCp7UyUJsuNZK4FChJd8lE+W6PtGKgq5bIt/o4zvwT+DAZPs0R5T0oskuj0S3G/6eBLbs+B6ImJva+mSVesaTY0eD8h/9oADAMBAAIAAwAAABA189v8WVJWJerY19L/xAAZEQADAQEBAAAAAAAAAAAAAAAAAREQIUH/2gAIAQMBAT8QHUUomXYNczIkJEJseHSCQto2KekRw5n/xAAZEQADAQEBAAAAAAAAAAAAAAAAAREQIUH/2gAIAQIBAT8QommQg0TWxPuKGxspchXpEUoy6hlZTpT/xAAfEAEAAgICAwEBAAAAAAAAAAABABEhMUFRYXGBkeH/2gAIAQEAAT8QFxYbWCUCnUU6WeaKKSACAh4j5EogKGzhBUDRYiw7RBhzENNfjAigDeGCCs7LYlDJ6QTF5N1axpSvTb49wXQFIUPPuWcwrRPofMCataTh1C+xrThgbFXmWMPLOo7VY4itPyh8EuEX+RI7+wuwVBjgzq7n/9k=';
+    var pano_data = {full_width: 64, full_height: 32, cropped_width: 64, cropped_height: 32, cropped_x: 0, cropped_y: 0};
+    PSV.show_panorama(data_uri, pano_data);
+}
+</script>
+</body>
+</html>
