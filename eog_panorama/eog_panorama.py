@@ -4,8 +4,8 @@
 # Approach:
 # - Listen for image load event and check the XMP tag GPano:UsePanoramaViewer
 #   https://developers.google.com/streetview/spherical-metadata
-#   - GExiv2 (not robust enough to inconsistent XMP tags)
-#   - ExifTool
+#   - GExiv2 (in default Ubuntu install, but not robust enough to inconsistent XMP tags)
+#   - ExifTool (not in default install)
 # - If it is a panorama, replace 2D image display by 360° display
 #   Create a sphere and project the photo according to XMP GPano tags.
 #   - OpenGL:              python-gtklext (not maintained and not in repos), 

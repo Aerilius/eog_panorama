@@ -18,6 +18,8 @@ implementation could be realized or even included into Eye of Gnome.
 
 ## Requirements
 
+Exiftool can be installed with `sudo apt install libimage-exiftool-perl`
+
 Tested on **Ubuntu 16.10** (it should work on any recent distribution with Eye of Gnome 3, Python3, Gtk+3, WebKit2)
 
 ## Installation
