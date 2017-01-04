@@ -81,6 +81,14 @@ var PSV = new PhotoSphereViewer({
 
 // Simple API to control the panorama from Python
 PSV.show_panorama = function(uri, pano_data) {
+    
+    // Match the initial zoom level to the cropped size.
+    var aspect = pano_data.cropped_width / pano_data.cropped_height;
+    var max_h_fov = 360*pano_data.cropped_width/pano_data.full_width;
+    var initial_fov = Math.min(this.config.default_fov, max_h_fov/aspect);
+    var zoom_level = 100 - 100 * (initial_fov - this.config.min_fov) / (this.config.max_fov - this.config.min_fov); // from photo-sphere-viewer.js:212
+    this.zoom(zoom_level);
+    
     this.config.pano_data = pano_data;
     
     this.setPanorama(uri, false).then(function() {
