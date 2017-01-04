@@ -52,6 +52,8 @@ var PSV = new PhotoSphereViewer({
     navbar: false,
     caption: false, // (would make navbar show up)
     default_fov: 75,
+    // Issue: default min_fov 30 limited zooming too much, decrease it.
+    min_fov: 5,
     fisheye: true,
     move_speed: 1.1,
     time_anim: true,
