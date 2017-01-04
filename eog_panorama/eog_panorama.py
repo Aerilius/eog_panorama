@@ -297,6 +297,9 @@ class PanoramaViewer(WebKit2.WebView):
         if uri.netloc == 'document_ready':
             # Call the callback.
             if self.on_loaded_cb:
+                # Issue: Webkit2.WebView does not return correct JavaScript window.devicePixelRatio on hidpi devices.
+                # Set the device pixel ratio from Gtk widget.
+                self._set_device_pixel_ratio()
                 self.on_loaded_cb()
                 self.on_loaded_cb = None
         elif uri.netloc == 'show_panorama_completed':
@@ -307,3 +310,8 @@ class PanoramaViewer(WebKit2.WebView):
         # Finish the request with dummy data (we do not have a new page to load).
         # Otherwise, subsequent requests and also src='data:image...' will cause an error.
         request.finish(Gio.MemoryInputStream.new_from_data([0]), -1, None)
+    
+    def _set_device_pixel_ratio(self):
+        factor = self.get_scale_factor()
+        self.run_javascript("window.devicePixelRatio = %s;"%factor)
+        self.run_javascript("PhotoSphereViewer.SYSTEM.pixelRatio = %s;"%factor)
