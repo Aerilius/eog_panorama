@@ -46,35 +46,43 @@ function callPython(message) {
 // Initialize the panorama viewer.
 var PSV = new PhotoSphereViewer({
     container: 'photosphere',
-    //panorama: '',
+    
+    // Disable autoload and UI, since we control it manually.
     autoload: false,
     loading_img: false,
     navbar: false,
     caption: false, // (would make navbar show up)
+    
+    // Avoid XMLHttpRequest which fails locally, we provide the XMP data from eog. 
+    // Also there is a mysterious script error when using true.
+    usexmpdata: false,
+    
+    // Rendering
     default_fov: 75,
     // Issue: default min_fov 30 limited zooming too much, decrease it.
     min_fov: 5,
-    fisheye: true,
-    move_speed: 1.1,
-    time_anim: true,
-    // Use a slow initial rotation to indicate there is more to see.
-    anim_speed: '0.1rpm',
-    mousewheel: true,
-    mousemove: true,
-    keyboard: true,
-    gyroscope: true,
+    fisheye: false,
     // Note: Fallback without webgl requires three.js/CanvasRenderer.js, three.js/Projector.js
     webgl: true,
-    // Avoid XMLHttpRequest which fails locally, we provide the XMP data from eog. 
-    // Also there is a mysterious error using true.
-    usexmpdata: false,
-    //pano_data: {}
+    
+    // Animation
+    time_anim: false,
+    // Use a slow initial rotation to indicate there is more to see.
+    anim_speed: '0.1rpm',
+    
+    // Input
+    mousewheel: true,
+    mousemove: true,
+    move_speed: 1.1,
+    keyboard: true,
+    gyroscope: true
 });
 
 
 // Simple API to control the panorama from Python
 PSV.show_panorama = function(uri, pano_data) {
     this.config.pano_data = pano_data;
+    
     this.setPanorama(uri, false).then(function() {
         callPython('show_panorama_completed');
     });
