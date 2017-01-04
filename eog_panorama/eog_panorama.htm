@@ -67,8 +67,7 @@ var PSV = new PhotoSphereViewer({
     
     // Animation
     time_anim: false,
-    // Use a slow initial rotation to indicate there is more to see.
-    anim_speed: '0.1rpm',
+    anim_speed: '0rpm',
     
     // Input
     mousewheel: true,
@@ -81,6 +80,7 @@ var PSV = new PhotoSphereViewer({
 
 // Simple API to control the panorama from Python
 PSV.show_panorama = function(uri, pano_data) {
+    var self = this;
     
     // Match the initial zoom level to the cropped size.
     var aspect = pano_data.cropped_width / pano_data.cropped_height;
@@ -91,8 +91,15 @@ PSV.show_panorama = function(uri, pano_data) {
     
     this.config.pano_data = pano_data;
     
+    var center = {
+        x: pano_data.cropped_width / 2,
+        y: pano_data.cropped_height / 2
+    };
+    
     this.setPanorama(uri, false).then(function() {
         callPython('show_panorama_completed');
+    }).then(function() {
+        self.animate(center, 500)
     });
 };
 
