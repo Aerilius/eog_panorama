@@ -1,26 +1,29 @@
-# A panorama viewer plugin for displaying 360° photo sphere images in the 'Eye of Gnome' image viewer
+# A panorama plugin for displaying 360° photo sphere images in the 'Eye of Gnome' image viewer
+
+<p align="center">
+  <img alt="logo" src="https://cdn.rawgit.com/Aerilius/eog_panorama/master/eog_panorama/eog_panorama.svg?raw=true"/>
+</p>
 
 Panoramas are more and more popular no matter whether produced with tripod and 
-professional cameras or by mobile apps. Describing XMP-tags have been 
-standardized [https://www.adobe.com/products/xmp.html] and web services 
+professional cameras or by mobile apps. Describing [XMP-tags](https://www.adobe.com/products/xmp.html) have been 
+standardized and web services 
 (Google Photos, FB) automatically detect and display panoramas appropriately. 
 In Eye of Gnome, a spherical projection would be smarter and more comfortable 
 than displaying a panorama photo as a long horizontal strip.
 
 <p align="center">
-  <img src="https://cdn.rawgit.com/Aerilius/eog_panorama/master/eog_panorama/eog_panorama.svg?raw=true" alt="eog_panorama icon"/>
+  <img alt="screenshot" src="https://cdn.rawgit.com/Aerilius/eog_panorama/master/screenshot.png?raw=true"/>
 </p>
 
-This is a proof of concept and would not have been possible without the help of 
-Jérémy Heleine and Damien Sorel's [**Photo Sphere Viewer**](http://photo-sphere-viewer.js.org/) javascript library.
+This is a proof of concept that would not have been possible without the help of the [**Photo Sphere Viewer**](http://photo-sphere-viewer.js.org/) javascript library by Jérémy Heleine and Damien Sorel.
 Once GTK scene graph kit is more commonly available and easy to use, a native 
 implementation could be realized or even included into Eye of Gnome.
 
 ## Requirements
 
-Exiftool can be installed with `sudo apt install libimage-exiftool-perl`
+- **Exiftool** which can be installed with `sudo apt install libimage-exiftool-perl`
 
-Tested on **Ubuntu 16.10** (it should work on any recent distribution with Eye of Gnome 3, Python3, Gtk+3, WebKit2)
+- A recent distribution with Eye of Gnome 3+, **Python3**, Gtk+3, WebKit2 (tested on Ubuntu 16.10)
 
 ## Installation
 
