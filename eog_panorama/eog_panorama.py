@@ -302,6 +302,14 @@ class PanoramaViewer(WebKit2.WebView):
                 self._set_device_pixel_ratio()
                 self.on_loaded_cb()
                 self.on_loaded_cb = None
+        
+        elif uri.netloc == 'log':
+            print('WebView log: '+urllib.parse.unquote(uri.path[1:]))
+        
+        elif uri.netloc == 'error':
+            print('WebView Error:')
+            print(urllib.parse.unquote(uri.path[1:]))
+        
         elif uri.netloc == 'show_panorama_completed':
             # Call the callback.
             if self.pending_on_completed_cb:
@@ -310,6 +318,8 @@ class PanoramaViewer(WebKit2.WebView):
         # Finish the request with dummy data (we do not have a new page to load).
         # Otherwise, subsequent requests and also src='data:image...' will cause an error.
         request.finish(Gio.MemoryInputStream.new_from_data([0]), -1, None)
+    
+    
     
     def _set_device_pixel_ratio(self):
         factor = self.get_scale_factor()

@@ -34,8 +34,8 @@
 window.addEventListener('touchstart', function(event) { event.preventDefault(); });
 
 
-function callPython(message) {
-    window.location.href = 'eogp://'+message;
+function callPython(message, data) {
+    window.location.href = 'eogp://'+message+'/'+data;
 }
 
 
@@ -107,6 +107,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         .then(function() {
             self.zoom(zoom_level);
             callPython('show_panorama_completed');
+        }, function(error) {
+            callPython('error', encodeURIComponent(error.name + ': ' + error.message + '\n' + error.stack));
         }).then(function() {
             self.animate(position, 3000);
         });
@@ -132,8 +134,22 @@ document.addEventListener("DOMContentLoaded", function(event) {
 // DEBUG helpers:
 
 
-window.onerror = function(message, url, linenumber) {
-    alert('Error message: '+message+'\nURL: '+url+'\nLine Number: '+linenumber);
+console.log = function(message) {
+    callPython('log', message);
+}
+
+
+console.error = function(message) {
+    callPython('error', message);
+}
+
+
+window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
+    if (errorObj) {
+        callPython('error', encodeURIComponent(error.name + ': ' + error.message + '\n' + error.stack));
+    } else {
+        callPython('error', encodeURIComponent(errorMsg + ': ' + url + ':' + lineNumber + ':' + column));
+    }
     return true;
 }
 
