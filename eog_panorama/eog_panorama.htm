@@ -19,10 +19,6 @@
       height: 100%;
     }
   </style>
-</head>
-<body>
-
-<div id="photosphere"></div>
 
 <script src="three.js/three.js"></script>
 <script src="D.js/lib/D.js"></script>
@@ -43,71 +39,94 @@ function callPython(message) {
 }
 
 
-// Initialize the panorama viewer.
-var PSV = new PhotoSphereViewer({
-    container: 'photosphere',
+var PSV;
+document.addEventListener("DOMContentLoaded", function(event) {
     
-    // Disable autoload and UI, since we control it manually.
-    autoload: false,
-    loading_img: false,
-    navbar: false,
-    caption: false, // (would make navbar show up)
     
-    // Avoid XMLHttpRequest which fails locally, we provide the XMP data from eog. 
-    // Also there is a mysterious script error when using true.
-    usexmpdata: false,
+    // Tell python when the document finished loading.
+    // While instantiation of WebView is synchronous, loading of html is asynchronous.
+    // In order to interact from python with the html/javascript, we need to await the document ready event.
+    // Note: Webkit returns incorrect viewport values (window.innerWidth=0 etc.) still ca. 1s after onload.
+    callPython('document_ready');
     
-    // Rendering
-    default_fov: 75,
-    // Issue: default min_fov 30 limited zooming too much, decrease it.
-    min_fov: 5,
-    fisheye: false,
-    // Note: Fallback without webgl requires three.js/CanvasRenderer.js, three.js/Projector.js
-    webgl: true,
     
-    // Animation
-    time_anim: false,
-    anim_speed: '0rpm',
+    // Initialize the panorama viewer.
+    PSV = new PhotoSphereViewer({
+        container: 'photosphere',
+        
+        // Disable autoload and UI, since we control it manually.
+        autoload: false,
+        loading_img: false,
+        navbar: false,
+        caption: false, // (would make navbar show up)
+        
+        // Avoid XMLHttpRequest which fails locally, we provide the XMP data from eog. 
+        // Also there is a mysterious script error when using true.
+        usexmpdata: false,
+        
+        // Rendering
+        default_fov: 75,
+        // Issue: default min_fov 30 limited zooming too much, decrease it.
+        min_fov: 5,
+        max_fov: 120,
+        fisheye: false,
+        // Note: Fallback without webgl requires three.js/CanvasRenderer.js, three.js/Projector.js
+        webgl: true,
+        
+        // Animation
+        time_anim: false,
+        anim_speed: '0rpm',
+        
+        // Input
+        mousewheel: true,
+        mousemove: true,
+        move_speed: 1.1,
+        keyboard: true,
+        gyroscope: true
+    });
     
-    // Input
-    mousewheel: true,
-    mousemove: true,
-    move_speed: 1.1,
-    keyboard: true,
-    gyroscope: true
-});
-
-
-// Simple API to control the panorama from Python
-PSV.show_panorama = function(uri, pano_data) {
-    var self = this;
     
-    // Match the initial zoom level to the cropped size.
-    var aspect = pano_data.cropped_width / pano_data.cropped_height;
-    var max_h_fov = 360*pano_data.cropped_width/pano_data.full_width;
-    var initial_fov = Math.min(this.config.default_fov, max_h_fov/aspect);
-    var zoom_level = 100 - 100 * (initial_fov - this.config.min_fov) / (this.config.max_fov - this.config.min_fov); // from photo-sphere-viewer.js:212
-    this.zoom(zoom_level);
-    
-    this.config.pano_data = pano_data;
-    
-    var center = {
-        x: pano_data.cropped_width / 2,
-        y: pano_data.cropped_height / 2
+    // Simple API to control the panorama from Python
+    PSV.show_panorama = function(uri, pano_data) {
+        var self = this;
+        
+        // Set up image size and crop area.
+        self.config.pano_data = pano_data;
+        
+        // Set up zoom level.
+        var zoom_level = get_zoom_level(pano_data, self.config.min_fov, self.config.max_fov);
+        
+        // Set up orientation.
+        var position = {
+            x: pano_data.cropped_width / 2,
+            y: pano_data.cropped_height / 2
+        };
+        
+        // Load the new image file, apply the zoom, then animate to position.
+        return self.setPanorama(uri, false)
+        .then(function() {
+            self.zoom(zoom_level);
+            callPython('show_panorama_completed');
+        }).then(function() {
+            self.animate(position, 3000);
+        });
     };
     
-    this.setPanorama(uri, false).then(function() {
-        callPython('show_panorama_completed');
-    }).then(function() {
-        self.animate(center, 500)
-    });
-};
-
-
-// Tell python the document finished loading.
-// While instantiation of WebView is synchronous, loading of html is asynchronous.
-// Only now, python can interact with the html.
-callPython('document_ready');
+    
+    function get_zoom_level(pano_data, min_fov, max_fov) {
+        var initial_fov;
+        if (pano_data.initial_h_fov && pano_data.initial_h_fov != 0) {
+            initial_fov = Math.max(min_fov, Math.min(pano_data.initial_h_fov, max_fov));
+        } else {
+            // Match the initial zoom level to the cropped size.
+            //var h_fov = 360 * pano_data.cropped_width / pano_data.full_width;
+            var v_fov = 180 * pano_data.cropped_height / pano_data.full_height;
+            initial_fov = v_fov;
+        }
+        // from photo-sphere-viewer.js:212
+        return 100 - 100 * (initial_fov - min_fov) / (max_fov - min_fov);
+    }
+});
 
 
 // DEBUG helpers:
@@ -125,5 +144,11 @@ function test_show_panorama() {
     PSV.show_panorama(data_uri, pano_data);
 }
 </script>
+
+</head>
+<body>
+
+<div id="photosphere"></div>
+
 </body>
 </html>
