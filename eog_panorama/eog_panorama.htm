@@ -97,13 +97,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
         var zoom_level = get_zoom_level(pano_data, self.config.min_fov, self.config.max_fov);
         
         // Set up orientation.
-        var position = {
-            x: pano_data.cropped_width / 2,
-            y: pano_data.cropped_height / 2
-        };
+        var position = get_position(pano_data);
+        var offset_position = offset_position_by_fraction(position, 1.0/50, 1.0/100);
         
-        // Load the new image file, apply the zoom, then animate to position.
-        return self.setPanorama(uri, false)
+        // Load the new image file, apply the zoom, then animate to position as hint that it is 360°.
+        return self.setPanorama(uri, offset_position, false)
         .then(function() {
             self.zoom(zoom_level);
             callPython('show_panorama_completed');
@@ -127,6 +125,32 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
         // from photo-sphere-viewer.js:212
         return 100 - 100 * (initial_fov - min_fov) / (max_fov - min_fov);
+    }
+    
+    
+    function get_position(pano_data) {
+        if (pano_data.initial_heading && pano_data.initial_pitch) {
+            return {
+                latitude:  pano_data.initial_heading,
+                longitude: pano_data.initial_pitch
+            };
+        } else {
+            // Fallback to the center of the image.
+            return {
+                x: pano_data.cropped_width / 2,
+                y: pano_data.cropped_height / 2
+            };
+        }
+    }
+    
+    
+    function offset_position_by_fraction(position, dx, dy) {
+        var result = {};
+        if (position.latitude)  result.latitude  = position.latitude * (1 + dx);
+        if (position.longitude) result.longitude = position.longitude * (1 + dy);
+        if (position.x) result.x = position.x * (1 + dx);
+        if (position.y) result.y = position.y * (1 + dy);
+        return result;
     }
 });
 

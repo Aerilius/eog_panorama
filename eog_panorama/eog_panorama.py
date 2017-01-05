@@ -141,11 +141,14 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
         #print(metadata.get_tag_raw('Xmp.GPano.UsePanoramaViewer'))
         
         # Using exiftool instead.
-        tags = ['XMP:UsePanoramaViewer', 'XMP:ProjectionType', \
-                'XMP:FullPanoWidthPixels', 'XMP:FullPanoHeightPixels', \
-                'XMP:CroppedAreaImageWidthPixels', 'XMP:CroppedAreaImageHeightPixels', \
-                'XMP:CroppedAreaLeftPixels', 'XMP:CroppedAreaTopPixels', \
-                'XMP:PoseHeadingDegrees' \
+        tags = ['XMP:UsePanoramaViewer', 'XMP:ProjectionType',
+                'XMP:FullPanoWidthPixels', 'XMP:FullPanoHeightPixels',
+                'XMP:CroppedAreaImageWidthPixels', 'XMP:CroppedAreaImageHeightPixels',
+                'XMP:CroppedAreaLeftPixels', 'XMP:CroppedAreaTopPixels',
+                'XMP:PoseHeadingDegrees', # relates center of image to compass orientation
+                'XMP:InitialHorizontalFOVDegrees',
+                'XMP:InitialViewHeadingDegrees', 'XMP:InitialViewPitchDegrees',
+                'XMP:InitialViewRollDegrees'
                ]
         with ExifTool() as et:
             metadata = et.get_tags(tags, filepath)
@@ -278,7 +281,12 @@ class PanoramaViewer(WebKit2.WebView):
                         'XMP:CroppedAreaImageWidthPixels':  'cropped_width', 
                         'XMP:CroppedAreaImageHeightPixels': 'cropped_height', 
                         'XMP:CroppedAreaLeftPixels':        'cropped_x', 
-                        'XMP:CroppedAreaTopPixels':         'cropped_y'
+                        'XMP:CroppedAreaTopPixels':         'cropped_y',
+                        'XMP:PoseHeadingDegrees':           'pose_heading',
+                        'XMP:InitialHorizontalFOVDegrees':  'initial_h_fov',
+                        'XMP:InitialViewHeadingDegrees':    'initial_heading',
+                        'XMP:InitialViewPitchDegrees':      'initial_pitch',
+                        'XMP:InitialViewRollDegrees':       'initial_roll',
                        }
         pano_data = ', \n'.join(["%s: %d"%(key, metadata[tag]) for tag, key in tags_to_keys.items() if tag in metadata])
         script = "PSV.show_panorama('%s', {%s});"%(img_uri, pano_data)
