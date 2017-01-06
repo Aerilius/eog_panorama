@@ -43,6 +43,7 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
 
     def __init__(self):
         GObject.Object.__init__(self)
+        
         self.panorama_viewer_loaded = False
         self.panorama_viewer_active = False
         self.container = None
@@ -262,6 +263,9 @@ class PanoramaViewer(WebKit2.WebView):
         # Set up communication from webview document to python:
         context = self.get_context()
         context.register_uri_scheme(self.custom_scheme, self._uri_scheme_cb)
+        
+        # Detect navigation away from uri_panorama_viewer
+        self.connect("decide-policy", self._on_decide_policy)
     
     
     
@@ -291,6 +295,30 @@ class PanoramaViewer(WebKit2.WebView):
         pano_data = ', \n'.join(["%s: %d"%(key, metadata[tag]) for tag, key in tags_to_keys.items() if tag in metadata])
         script = "PSV.show_panorama('%s', {%s});"%(img_uri, pano_data)
         self.run_javascript(script)
+    
+    
+    
+    def _on_decide_policy(self, webview, decision, decision_type):
+        if decision_type == WebKit2.PolicyDecisionType.NAVIGATION_ACTION:
+            navigation_request = decision.get_navigation_action().get_request()
+            uri_string = navigation_request.get_uri()
+            uri = urllib.parse.urlparse(uri_string)
+            # Allow custom uri scheme.
+            if uri.scheme == self.custom_scheme:
+                pass # Pass over to uri scheme handler and _uri_scheme_cb
+            else:
+                # Disallow any other uri except panorama viewer page.
+                if uri_string != self.uri_panorama_viewer:
+                    decision.ignore()
+                    # Redirect file uris to be opened by the application.
+                    # Not elegant to execute this in PanoramaViewer class,
+                    # better would be to let event bubble up and let eog act on it.
+                    if uri.scheme == 'file':
+                        app = Eog.Application.get_instance()
+                        flags = Eog.StartupFlags.SINGLE_WINDOW # in same eog instance
+                        app.open_uri_list([uri_string], 0, flags)
+                    return True
+        return False
     
     
     
