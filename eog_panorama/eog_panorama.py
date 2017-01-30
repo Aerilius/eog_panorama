@@ -187,12 +187,18 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
         Returns:
             a string of the base64 encoded image
         """
+        with open(filepath, 'rb') as f:
+            return 'data:' + self.get_image_mimetype(filepath) \
+            + ';base64,' + base64.b64encode(f.read()).decode('ascii')
+
+
+
+    def get_image_mimetype(self, filepath):
         m = magic.open(magic.MAGIC_MIME_TYPE)
         m.load()
         mimetype = m.file(filepath)
         m.close()
-        with open(filepath, 'rb') as f:
-            return 'data:'+mimetype+';base64,' + base64.b64encode(f.read()).decode('ascii')
+        return mimetype
 
 
 
