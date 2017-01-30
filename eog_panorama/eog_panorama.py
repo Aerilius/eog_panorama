@@ -29,8 +29,6 @@ from gi.repository import WebKit2
 
 # Encoding image in data uris.
 import base64
-# Mime type
-import magic
 
 
 
@@ -194,11 +192,16 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
 
 
     def get_image_mimetype(self, filepath):
-        m = magic.open(magic.MAGIC_MIME_TYPE)
-        m.load()
-        mimetype = m.file(filepath)
-        m.close()
-        return mimetype
+        ext = os.path.splitext(filepath)[1].lower()
+        eog_mimetypes = {
+            '.bmp':  'image/x-bmp',
+            '.jpg':  'image/jpg',
+            '.jpeg': 'image/jpg',
+            '.png':  'image/png',
+            '.tif':  'image/tiff',
+            '.tiff': 'image/tiff'
+        }
+        return eog_mimetypes[ext] if ext in eog_mimetypes else 'image/'+ext[1:]
 
 
 

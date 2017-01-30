@@ -21,8 +21,6 @@ implementation could be realized or even included into Eye of Gnome.
 
 ## Requirements
 
-- **magic** `sudo apt install python3-magic`
-
 - **Exiftool** which can be installed with `sudo apt install libimage-exiftool-perl`
 
 - A recent distribution with Eye of Gnome 3+, **Python3**, Gtk+3, WebKit2 (tested on Ubuntu 16.10)
