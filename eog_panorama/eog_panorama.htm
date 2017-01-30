@@ -92,6 +92,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
         var position = get_position(pano_data);
         var offset_position = offset_position_by_fraction(position, 1.0/50, 1.0/100);
         
+        // Workaround: The aspect ratio is initialized as 0, causing hFov=0 which prevents to move around horizontally using the mouse.
+        if (self.prop.aspect == 0) self.prop.aspect = 1;
+        
         // Load the new image file, apply the zoom, then animate to position as hint that it is 360°.
         return self.setPanorama(uri, offset_position, false)
         .then(function() {
