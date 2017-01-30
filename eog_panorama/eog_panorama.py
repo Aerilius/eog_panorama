@@ -21,7 +21,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject, Gio, Eog
 
 # EXIF/XMP metadata
-from pyexiftool.exiftool import ExifTool
+gi.require_version('GExiv2', '0.10')
+from gi.repository import GExiv2
 
 # Webview for WebGL panorama viewer
 gi.require_version('WebKit2', '4.0')
@@ -128,8 +129,8 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
 
 
     def use_panorama_viewer(self, filepath):
-        with ExifTool() as et:
-            return et.get_tag('XMP:UsePanoramaViewer', filepath)
+        metadata = GExiv2.Metadata(filepath)
+        return metadata.get_tag_string('Xmp.GPano.UsePanoramaViewer') == 'True'
 
 
 
@@ -141,42 +142,34 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
         Returns:
             a dict containing XMP keys with their values
         """
-        # Exiv2 is not robust and does not read any GPano XMP tags at all if there exist duplicate tags.
-        #metadata = GExiv2.Metadata(filepath)
+        metadata = GExiv2.Metadata(filepath)
         # For tags see: http://www.exiv2.org/tags.html
         # and http://exiv2.org/tags-xmp-GPano.html
-        #print(metadata.get_tag_label('Xmp.GPano.UsePanoramaViewer'))
-        #print(metadata.get_tag_string('Xmp.GPano.UsePanoramaViewer'))
-        #print(metadata.get_tag_raw('Xmp.GPano.UsePanoramaViewer'))
-        
-        # Using exiftool instead.
         tags_required = {
-            'XMP:FullPanoWidthPixels':          'full_width',
-            'XMP:FullPanoHeightPixels':         'full_height',
-            'XMP:CroppedAreaImageWidthPixels':  'cropped_width',
-            'XMP:CroppedAreaImageHeightPixels': 'cropped_height',
-            'XMP:CroppedAreaLeftPixels':        'cropped_x',
-            'XMP:CroppedAreaTopPixels':         'cropped_y'
+            'Xmp.GPano.FullPanoWidthPixels':          'full_width',
+            'Xmp.GPano.FullPanoHeightPixels':         'full_height',
+            'Xmp.GPano.CroppedAreaImageWidthPixels':  'cropped_width',
+            'Xmp.GPano.CroppedAreaImageHeightPixels': 'cropped_height',
+            'Xmp.GPano.CroppedAreaLeftPixels':        'cropped_x',
+            'Xmp.GPano.CroppedAreaTopPixels':         'cropped_y'
         }
         tags_optional = {
-            'XMP:PoseHeadingDegrees':           'pose_heading',
-            'XMP:InitialHorizontalFOVDegrees':  'initial_h_fov',
-            'XMP:InitialViewHeadingDegrees':    'initial_heading',
-            'XMP:InitialViewPitchDegrees':      'initial_pitch',
-            'XMP:InitialViewRollDegrees':       'initial_roll'
+            'Xmp.GPano.PoseHeadingDegrees':           'pose_heading',
+            'Xmp.GPano.InitialHorizontalFOVDegrees':  'initial_h_fov',
+            'Xmp.GPano.InitialViewHeadingDegrees':    'initial_heading',
+            'Xmp.GPano.InitialViewPitchDegrees':      'initial_pitch',
+            'Xmp.GPano.InitialViewRollDegrees':       'initial_roll'
         }
-        with ExifTool() as et:
-            metadata = et.get_tags(list(tags_required.keys()) + list(tags_optional.keys()), filepath)
-            result = {}
-            for (tag, key) in tags_required.items():
-                if tag in metadata:
-                    result[key] = int(metadata[tag])
-                else:
-                    raise Exception("Required tag %s is missing, cannot use panorama viewer."%tag)
-            for (tag, key) in tags_optional.items():
-                if tag in metadata:
-                    result[key] = int(metadata[tag])
-            return result
+        result = {}
+        for (tag, key) in tags_required.items():
+            if metadata.has_tag(tag):
+                result[key] = int(metadata.get_tag_string(tag))
+            else:
+                raise Exception("Required tag %s is missing, cannot use panorama viewer."%tag)
+        for (tag, key) in tags_optional.items():
+            if metadata.has_tag(tag):
+                result[key] = int(metadata.get_tag_string(tag))
+        return result
 
 
 

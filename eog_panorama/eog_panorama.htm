@@ -42,14 +42,6 @@ function callPython(message, data) {
 var PSV;
 document.addEventListener("DOMContentLoaded", function(event) {
     
-    
-    // Tell python when the document finished loading.
-    // While instantiation of WebView is synchronous, loading of html is asynchronous.
-    // In order to interact from python with the html/javascript, we need to await the document ready event.
-    // Note: Webkit returns incorrect viewport values (window.innerWidth=0 etc.) still ca. 1s after onload.
-    callPython('document_ready');
-    
-    
     // Initialize the panorama viewer.
     PSV = new PhotoSphereViewer({
         container: 'photosphere',
@@ -152,6 +144,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
         if (position.y) result.y = position.y * (1 + dy);
         return result;
     }
+    
+    
+    // Tell python when the document finished loading.
+    // While instantiation of WebView is synchronous, loading of html is asynchronous.
+    // In order to interact from python with the html/javascript, we need to await the document ready event.
+    // Note: Webkit returns incorrect viewport values (window.innerWidth=0 etc.) still ca. 1s after onload.
+    callPython('document_ready');
 });
 
 
