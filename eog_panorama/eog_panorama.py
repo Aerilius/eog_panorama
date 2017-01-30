@@ -4,7 +4,7 @@
 # Approach:
 # - Listen for image load event and check the XMP tag GPano:UsePanoramaViewer
 #   https://developers.google.com/streetview/spherical-metadata
-#   - GExiv2 (in default Ubuntu install, but not robust enough to inconsistent XMP tags)
+#   - GExiv2 (in default Ubuntu install, but may not be robust enough to inconsistent/duplicate XMP tags)
 #   - ExifTool (not in default install)
 # - If it is a panorama, replace 2D image display by 360° display
 #   Create a sphere and project the photo according to XMP GPano tags.
@@ -62,8 +62,8 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
         self.thumb_view = self.window.get_thumb_view()
         self.selection_change_handler = self.thumb_view.connect('selection-changed', self.on_selection_changed)
         # Initialization of panorama viewer:
-        #    Since it take significant amount of memory, we load it only once we 
-        #    encounter a panorama image (see on_selection_changed).
+        #    Since it takes significant amount of memory, we load it only 
+        #    once we encounter a panorama image (see on_selection_changed).
         #self.load_panorama_viewer()
 
 
@@ -93,6 +93,7 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
             
             # If it is a panorama, switch to panorama viewer.
             if self.use_panorama_viewer(filepath):
+                # Read panorama metadata
                 try:
                     metadata = self.get_pano_xmp(filepath)
                     # I tried passing just the image file path, but cross-site-scripting
