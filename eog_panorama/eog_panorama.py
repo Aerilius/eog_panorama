@@ -93,21 +93,25 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
             
             # If it is a panorama, switch to panorama viewer.
             if self.use_panorama_viewer(filepath):
-                # Read panorama metadata
-                metadata = self.get_pano_xmp(filepath)
-                # I tried passing just the image file path, but cross-site-scripting
-                # restrictions do not allow local file:// access.
-                # Solutions: simple server or data uri.
-                image = self.image_to_base64(filepath)
-                # Lazy loading: Create panorama_viewer only when a panorama is encountered.
-                # TODO: maybe unload it again after a certain amount of non-panorama images.
-                if not self.panorama_viewer_loaded:
-                    # 1. Load the panorama viewer.
-                    self.load_panorama_viewer(lambda: self.panorama_view.load_image(image, metadata, self.show_panorama) )
-                else:
-                    # 2. Load the image into the panorama viewer.
-                    # 3. When finished, make it visible.
-                    self.panorama_view.load_image(image, metadata, self.show_panorama)
+                try:
+                    metadata = self.get_pano_xmp(filepath)
+                    # I tried passing just the image file path, but cross-site-scripting
+                    # restrictions do not allow local file:// access.
+                    # Solutions: simple server or data uri.
+                    image = self.image_to_base64(filepath)
+                    # Lazy loading: Create panorama_viewer only when a panorama is encountered.
+                    # TODO: maybe unload it again after a certain amount of non-panorama images.
+                    if not self.panorama_viewer_loaded:
+                        # 1. Load the panorama viewer.
+                        self.load_panorama_viewer(lambda: self.panorama_view.load_image(image, metadata, self.show_panorama) )
+                    else:
+                        # 2. Load the image into the panorama viewer.
+                        # 3. When finished, make it visible.
+                        self.panorama_view.load_image(image, metadata, self.show_panorama)
+                except Exception as error:
+                    print(error)
+                    # Fallback to display as normal image.
+                    self.hide_panorama()
             else:
                 # It is a normal image.
                 self.hide_panorama()
@@ -145,13 +149,15 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
         #print(metadata.get_tag_raw('Xmp.GPano.UsePanoramaViewer'))
         
         # Using exiftool instead.
-        tags = {
+        tags_required = {
             'XMP:FullPanoWidthPixels':          'full_width',
             'XMP:FullPanoHeightPixels':         'full_height',
             'XMP:CroppedAreaImageWidthPixels':  'cropped_width',
             'XMP:CroppedAreaImageHeightPixels': 'cropped_height',
             'XMP:CroppedAreaLeftPixels':        'cropped_x',
-            'XMP:CroppedAreaTopPixels':         'cropped_y',
+            'XMP:CroppedAreaTopPixels':         'cropped_y'
+        }
+        tags_optional = {
             'XMP:PoseHeadingDegrees':           'pose_heading',
             'XMP:InitialHorizontalFOVDegrees':  'initial_h_fov',
             'XMP:InitialViewHeadingDegrees':    'initial_heading',
@@ -159,9 +165,14 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
             'XMP:InitialViewRollDegrees':       'initial_roll'
         }
         with ExifTool() as et:
-            metadata = et.get_tags(tags.keys(), filepath)
+            metadata = et.get_tags(list(tags_required.keys()) + list(tags_optional.keys()), filepath)
             result = {}
-            for (tag, key) in tags.items():
+            for (tag, key) in tags_required.items():
+                if tag in metadata:
+                    result[key] = int(metadata[tag])
+                else:
+                    raise Exception("Required tag %s is missing, cannot use panorama viewer."%tag)
+            for (tag, key) in tags_optional.items():
                 if tag in metadata:
                     result[key] = int(metadata[tag])
             return result
