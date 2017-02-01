@@ -21,6 +21,8 @@
   </style>
 
 <script src="three.js/three.js"></script>
+<script src="three.js/CanvasRenderer.js"></script>
+<script src="three.js/Projector.js"></script>
 <script src="D.js/lib/D.js"></script>
 <script src="uevent/uevent.js"></script>
 <script src="doT/doT.js"></script>
@@ -76,6 +78,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         keyboard: true,
         gyroscope: true
     });
+    
+    
+    // Check and warn once about WebGL
+    if (!PhotoSphereViewer.SYSTEM.isWebGLSupported) window.setTimeout(function() { console.warn('Failed to create WebGL context: WebGL is currently disabled. Fallback to Canvas Renderer may be slow.'); }, 0);
     
     
     // Simple API to control the panorama from Python
