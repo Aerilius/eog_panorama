@@ -165,6 +165,11 @@ console.log = function(message) {
 }
 
 
+    console.warn = function(message) {
+        callPython('warn', message);
+    }
+
+
 console.error = function(message) {
     callPython('error', message);
 }
@@ -172,7 +177,7 @@ console.error = function(message) {
 
 window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
     if (errorObj) {
-        callPython('error', encodeURIComponent(error.name + ': ' + error.message + '\n' + error.stack));
+        callPython('error', encodeURIComponent(errorObj.name + ': ' + errorObj.message + '\n' + errorObj.stack));
     } else {
         callPython('error', encodeURIComponent(errorMsg + ': ' + url + ':' + lineNumber + ':' + column));
     }

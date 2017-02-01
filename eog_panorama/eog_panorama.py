@@ -163,12 +163,12 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
         result = {}
         for (tag, key) in tags_required.items():
             if metadata.has_tag(tag):
-                result[key] = int(metadata.get_tag_string(tag))
+                result[key] = float(metadata.get_tag_string(tag))
             else:
                 raise Exception("Required tag %s is missing, cannot use panorama viewer."%tag)
         for (tag, key) in tags_optional.items():
             if metadata.has_tag(tag):
-                result[key] = int(metadata.get_tag_string(tag))
+                result[key] = float(metadata.get_tag_string(tag))
         return result
 
 
@@ -273,7 +273,7 @@ class PanoramaViewer(WebKit2.WebView):
         websettings.set_property('enable-plugins', False)
         #websettings.set_property('enable-developer-extras', True) # TODO: Enable this when debugging.
         # Trying to work-around file access problems:
-        #websettings.set_property('enable-xss-auditor', False)
+        #websettings.set_property('enable-xss-auditor', False) # Detailed error reporting for external script files is blocked by crossorigin policies, but this property seems not to enable it.
         #websettings.set_property('allow-file-access-from-file-url', True) # Not implemented :(
         self.set_settings(websettings)
         
@@ -357,9 +357,11 @@ class PanoramaViewer(WebKit2.WebView):
         elif uri.netloc == 'log':
             print('WebView log: '+urllib.parse.unquote(uri.path[1:]))
         
+        elif uri.netloc == 'warn':
+            print('WebView warn: '+urllib.parse.unquote(uri.path[1:]))
+        
         elif uri.netloc == 'error':
-            print('WebView Error:')
-            print(urllib.parse.unquote(uri.path[1:]))
+            print('WebView error: '+urllib.parse.unquote(uri.path[1:]))
         
         elif uri.netloc == 'show_panorama_completed':
             # Call the callback.
