@@ -21,7 +21,9 @@ implementation could be realized or even included into Eye of Gnome.
 
 ## Requirements
 
-- A recent distribution with Eye of Gnome 3+, **Python3**, Gtk+3, WebKit2 (tested on Ubuntu 16.10)
+- A recent distribution with Eye of Gnome 3+, **Python3**, Gtk+3, **WebKit2** (tested on Ubuntu 16.10)
+
+- **GObject bindings to Exiv2** are likely already installed as dependency of other softwares, if not do `sudo apt install gir1.2-gexiv2-0.10`
 
 ## Installation
 
