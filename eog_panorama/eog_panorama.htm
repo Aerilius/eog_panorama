@@ -50879,7 +50879,11 @@ window.addEventListener('touchstart', function(event) { event.preventDefault(); 
 
 
 function callPython(message, data) {
-    window.location.href = 'eogp://'+message+'/'+data;
+    if (navigator.userAgent.search(/Chrome|Firefox|OPR/) == -1) {
+        window.location.href = 'eogp://'+message+'/'+data;
+    } else {
+        console.log([message, data]);
+    }
 }
 
 
@@ -51008,6 +51012,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 // DEBUG helpers:
 
 
+if (navigator.userAgent.search(/Chrome|Firefox|OPR/) == -1) {
 console.log = function(message) {
     callPython('log', message);
 }
@@ -51020,6 +51025,7 @@ console.warn = function(message) {
 
 console.error = function(message) {
     callPython('error', message);
+}
 }
 
 
