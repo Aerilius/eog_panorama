@@ -130,7 +130,8 @@ class PanoramaPlugin(GObject.Object, Eog.WindowActivatable):
 
     def use_panorama_viewer(self, filepath):
         metadata = GExiv2.Metadata(filepath)
-        return metadata.get_tag_string('Xmp.GPano.UsePanoramaViewer') == 'True'
+        return metadata.get_tag_string('Xmp.GPano.ProjectionType') == 'equirectangular' \
+            and metadata.get_tag_string('Xmp.GPano.UsePanoramaViewer') != 'False'
 
 
 
